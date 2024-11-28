@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaction Time Experiment</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        #target-area { width: 200px; height: 200px; background-color: red; margin: 20px auto; cursor: pointer; }
+        #results { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Reaction Time Experiment</h1>
+    
+    <div id="setup">
+        <label for="participant-id">Participant ID:</label>
+        <input type="text" id="participant-id" required>
+        
+        <label for="condition">Condition:</label>
+        <select id="condition" required>
+            <option value="baseline">Baseline</option>
+            <option value="sports">Sports</option>
+            <option value="caffeine">Caffeine</option>
+            <option value="sugar">Sugar</option>
+            <option value="alcohol">Alcohol</option>
+        </select>
+        
+        <button id="start-btn">Start Experiment</button>
+    </div>
+    
+    <div id="experiment" style="display: none;">
+        <h2>Click When Color Changes!</h2>
+        <div id="target-area"></div>
+        <p>Reaction Time: <span id="reaction-time">0</span> ms</p>
+    </div>
+    
+    <div id="results">
+        <h2>Experiment Results</h2>
+        <textarea id="result-data" rows="10" cols="50" readonly></textarea>
+        <br>
+        <button id="download-btn">Download Results</button>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const setup = document.getElementById('setup');
+        const experiment = document.getElementById('experiment');
+        const targetArea = document.getElementById('target-area');
+        const reactionTimeDisplay = document.getElementById('reaction-time');
+        const results = document.getElementById('results');
+        const resultData = document.getElementById('result-data');
+        const downloadBtn = document.getElementById('download-btn');
+
+        let startTime, endTime;
+        let trials = [];
+
+        startBtn.addEventListener('click', startExperiment);
+        downloadBtn.addEventListener('click', downloadResults);
+
+        function startExperiment() {
+            const participantId = document.getElementById('participant-id').value;
+            const condition = document.getElementById('condition').value;
+
+            if (!participantId) {
+                alert('Please enter a Participant ID');
+                return;
+            }
+
+            setup.style.display = 'none';
+            experiment.style.display = 'block';
+            trials = [];
+
+            runTrial(participantId, condition);
+        }
+
+        function runTrial(participantId, condition) {
+            targetArea.style.backgroundColor = 'red';
+            targetArea.removeEventListener('click', recordReactionTime);
+
+            setTimeout(() => {
+                targetArea.style.backgroundColor = 'green';
+                startTime = new Date().getTime();
+                targetArea.addEventListener('click', () => recordReactionTime(participantId, condition));
+            }, Math.random() * 5000 + 1000);
+        }
+
+        function recordReactionTime(participantId, condition) {
+            endTime = new Date().getTime();
+            const reactionTime = endTime - startTime;
+            reactionTimeDisplay.textContent = reactionTime;
+
+            trials.push({ participantId, condition, reactionTime, timestamp: new Date().toISOString() });
+
+            if (trials.length < 5) {
+                runTrial(participantId, condition);
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            experiment.style.display = 'none';
+            results.style.display = 'block';
+            resultData.value = JSON.stringify(trials, null, 2);
+        }
+
+        function downloadResults() {
+            const blob = new Blob([JSON.stringify(trials, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'reaction_time_results.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
