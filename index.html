@@ -67,6 +67,27 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 10px;
+        }
+        .tag {
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin: 4px;
+            display: inline-block;
+        }
+        .remove-tag {
+            cursor: pointer;
+            margin-left: 6px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -81,6 +102,12 @@
             <div class="form-group">
                 <label for="age">Age:</label>
                 <input type="number" id="age" min="0" max="120" required>
+            </div>
+            <div class="form-group">
+                <label for="tag-input-field">Add Tags:</label>
+                <input type="text" id="tag-input-field">
+                <button id="add-tag-btn">Add Tag</button>
+                <div id="tag-input" class="tag-input"></div>
             </div>
             <button id="start-btn">Start Test</button>
         </div>
@@ -113,11 +140,12 @@
         const downloadBtn = document.getElementById('download-btn');
         const restartBtn = document.getElementById('restart-btn');
 
-        let startTime, endTime;
+        let startTime, endTime, delayTime;
         let isRunning = false;
         let trials = [];
         let currentTrial = 0;
         const totalTrials = 4;
+        const tags = [];
 
         startBtn.addEventListener('click', startExperiment);
         targetArea.addEventListener('click', handleClick);
@@ -144,10 +172,11 @@
             instructions.textContent = 'Wait for green...';
             trialCounter.textContent = currentTrial + 1;
 
+            delayTime = Math.floor(Math.random() * 3000) + 1000;
             setTimeout(() => {
                 targetArea.style.backgroundColor = 'green';
                 startTime = new Date().getTime();
-            }, Math.random() * 3000 + 1000);
+            }, delayTime);
         }
 
         function handleClick() {
@@ -162,6 +191,8 @@
                     participantId: document.getElementById('participant-id').value,
                     age: document.getElementById('age').value,
                     reactionTime: reactionTime,
+                    delayTime: delayTime,
+                    tags: [...tags],
                     timestamp: new Date().toISOString()
                 });
 
@@ -194,6 +225,32 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
+
+        function addTag(tag) {
+            if (tag && !tags.includes(tag)) {
+                tags.push(tag);
+                renderTags();
+            }
+        }
+
+        function renderTags() {
+            const tagInput = document.getElementById('tag-input');
+            tagInput.innerHTML = '';
+            tags.forEach((tag) => {
+                tagInput.innerHTML += `<span class="tag">${tag}<span class="remove-tag" onclick="removeTag('${tag}')">&times;</span></span>`;
+            });
+        }
+
+        function removeTag(tag) {
+            tags.splice(tags.indexOf(tag), 1);
+            renderTags();
+        }
+
+        document.getElementById('add-tag-btn').addEventListener('click', () => {
+            const tagInputField = document.getElementById('tag-input-field');
+            addTag(tagInputField.value);
+            tagInputField.value = '';
+        });
     </script>
 </body>
 </html>
