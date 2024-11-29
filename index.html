@@ -61,7 +61,7 @@
             display: block;
             margin-bottom: 5px;
         }
-        input[type="text"], select {
+        input[type="text"], input[type="number"] {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
@@ -88,12 +88,6 @@
             margin-left: 6px;
             font-weight: bold;
         }
-        #get-ready {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #333;
-            margin: 2rem 0;
-        }
     </style>
 </head>
 <body>
@@ -106,12 +100,8 @@
                 <input type="text" id="participant-id" required>
             </div>
             <div class="form-group">
-                <label for="drink-level">Drink Level:</label>
-                <select id="drink-level" required>
-                    <option value="0">No drinks (0)</option>
-                    <option value="1">Low drinks (1-3)</option>
-                    <option value="2">Moderate drinking (4+)</option>
-                </select>
+                <label for="age">Age:</label>
+                <input type="number" id="age" min="0" max="120" required>
             </div>
             <div class="form-group">
                 <label for="tag-input-field">Add Tags:</label>
@@ -123,7 +113,6 @@
         </div>
 
         <div id="test" style="display: none;">
-            <div id="get-ready" style="display: none;">Get ready for the next trial!</div>
             <div id="target-area"></div>
             <p>Reaction Time: <span id="reaction-time">0</span> ms</p>
             <p id="instructions">Click the circle when it turns green!</p>
@@ -150,7 +139,6 @@
         const averageTimeDisplay = document.getElementById('average-time');
         const downloadBtn = document.getElementById('download-btn');
         const restartBtn = document.getElementById('restart-btn');
-        const getReadyBlock = document.getElementById('get-ready');
 
         let startTime, endTime, delayTime;
         let isRunning = false;
@@ -166,8 +154,8 @@
 
         function startExperiment() {
             const participantId = document.getElementById('participant-id').value;
-            const drinkLevel = document.getElementById('drink-level').value;
-            if (!participantId || !drinkLevel) {
+            const age = document.getElementById('age').value;
+            if (!participantId || !age) {
                 alert('Please fill in all fields');
                 return;
             }
@@ -179,30 +167,11 @@
         }
 
         function startTrial() {
-            if (currentTrial > 0) {
-                showGetReadyBlock();
-            } else {
-                runTrial();
-            }
-        }
-
-        function showGetReadyBlock() {
-            getReadyBlock.style.display = 'block';
-            targetArea.style.display = 'none';
-            instructions.style.display = 'none';
-            setTimeout(() => {
-                getReadyBlock.style.display = 'none';
-                targetArea.style.display = 'block';
-                instructions.style.display = 'block';
-                runTrial();
-            }, 3000);
-        }
-
-        function runTrial() {
             isRunning = true;
             targetArea.style.backgroundColor = 'red';
             instructions.textContent = 'Wait for green...';
             trialCounter.textContent = currentTrial + 1;
+
             delayTime = Math.floor(Math.random() * 3000) + 1000;
             setTimeout(() => {
                 targetArea.style.backgroundColor = 'green';
@@ -220,7 +189,7 @@
 
                 trials.push({
                     participantId: document.getElementById('participant-id').value,
-                    drinkLevel: document.getElementById('drink-level').value,
+                    age: document.getElementById('age').value,
                     reactionTime: reactionTime,
                     delayTime: delayTime,
                     tags: [...tags],
