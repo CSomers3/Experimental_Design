@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Reaction Time Test</title>
+    <title>Reaction Time Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
         }
@@ -20,6 +20,8 @@
             padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
         }
         #target-area {
             width: 200px;
@@ -51,35 +53,96 @@
             font-weight: bold;
             color: #333;
         }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Reaction Time Test</h1>
-        <div id="target-area"></div>
-        <p>Reaction Time: <span id="reaction-time">0</span> ms</p>
-        <p id="instructions">Click the circle when it turns green!</p>
-        <button id="start-btn">Start Test</button>
+        
+        <div id="setup">
+            <div class="form-group">
+                <label for="participant-id">Participant ID:</label>
+                <input type="text" id="participant-id" required>
+            </div>
+            <div class="form-group">
+                <label for="age">Age:</label>
+                <input type="number" id="age" min="0" max="120" required>
+            </div>
+            <button id="start-btn">Start Test</button>
+        </div>
+
+        <div id="test" style="display: none;">
+            <div id="target-area"></div>
+            <p>Reaction Time: <span id="reaction-time">0</span> ms</p>
+            <p id="instructions">Click the circle when it turns green!</p>
+            <p>Trial <span id="trial-counter">1</span> of 4</p>
+        </div>
+
+        <div id="results" style="display: none;">
+            <h2>Test Complete</h2>
+            <p>Average Reaction Time: <span id="average-time"></span> ms</p>
+            <button id="download-btn">Download Results</button>
+            <button id="restart-btn">Restart Test</button>
+        </div>
     </div>
 
     <script>
-        const targetArea = document.getElementById('target-area');
+        const setupDiv = document.getElementById('setup');
+        const testDiv = document.getElementById('test');
+        const resultsDiv = document.getElementById('results');
         const startBtn = document.getElementById('start-btn');
+        const targetArea = document.getElementById('target-area');
         const reactionTimeDisplay = document.getElementById('reaction-time');
         const instructions = document.getElementById('instructions');
+        const trialCounter = document.getElementById('trial-counter');
+        const averageTimeDisplay = document.getElementById('average-time');
+        const downloadBtn = document.getElementById('download-btn');
+        const restartBtn = document.getElementById('restart-btn');
 
         let startTime, endTime;
         let isRunning = false;
+        let trials = [];
+        let currentTrial = 0;
+        const totalTrials = 4;
 
-        startBtn.addEventListener('click', startTest);
+        startBtn.addEventListener('click', startExperiment);
         targetArea.addEventListener('click', handleClick);
+        downloadBtn.addEventListener('click', downloadResults);
+        restartBtn.addEventListener('click', () => location.reload());
 
-        function startTest() {
-            if (isRunning) return;
+        function startExperiment() {
+            const participantId = document.getElementById('participant-id').value;
+            const age = document.getElementById('age').value;
+            if (!participantId || !age) {
+                alert('Please fill in all fields');
+                return;
+            }
+            setupDiv.style.display = 'none';
+            testDiv.style.display = 'block';
+            trials = [];
+            currentTrial = 0;
+            startTrial();
+        }
+
+        function startTrial() {
             isRunning = true;
-            startBtn.style.display = 'none';
             targetArea.style.backgroundColor = 'red';
             instructions.textContent = 'Wait for green...';
+            trialCounter.textContent = currentTrial + 1;
 
             setTimeout(() => {
                 targetArea.style.backgroundColor = 'green';
@@ -94,12 +157,42 @@
                 const reactionTime = endTime - startTime;
                 reactionTimeDisplay.textContent = reactionTime;
                 isRunning = false;
-                startBtn.style.display = 'inline-block';
-                startBtn.textContent = 'Try Again';
-                instructions.textContent = 'Click "Try Again" for another test.';
+
+                trials.push({
+                    participantId: document.getElementById('participant-id').value,
+                    age: document.getElementById('age').value,
+                    reactionTime: reactionTime,
+                    timestamp: new Date().toISOString()
+                });
+
+                currentTrial++;
+                if (currentTrial < totalTrials) {
+                    setTimeout(startTrial, 2000);
+                } else {
+                    showResults();
+                }
             } else {
                 instructions.textContent = 'Too early! Wait for green.';
             }
+        }
+
+        function showResults() {
+            testDiv.style.display = 'none';
+            resultsDiv.style.display = 'block';
+            const averageTime = trials.reduce((sum, trial) => sum + trial.reactionTime, 0) / totalTrials;
+            averageTimeDisplay.textContent = averageTime.toFixed(2);
+        }
+
+        function downloadResults() {
+            const blob = new Blob([JSON.stringify(trials, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'reaction_time_results.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
