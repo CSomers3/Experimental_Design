@@ -128,6 +128,7 @@
             <p>Reaction Time: <span id="reaction-time">0</span> ms</p>
             <p id="instructions">Click the circle when it turns green!</p>
             <p>Trial <span id="trial-counter">1</span> of 4</p>
+            <button id="next-trial-btn" style="display: none;">Next Trial</button>
         </div>
 
         <div id="results" style="display: none;">
@@ -151,6 +152,7 @@
         const downloadBtn = document.getElementById('download-btn');
         const restartBtn = document.getElementById('restart-btn');
         const getReadyBlock = document.getElementById('get-ready');
+        const nextTrialBtn = document.getElementById('next-trial-btn');
 
         let startTime, endTime, delayTime;
         let isRunning = false;
@@ -163,6 +165,7 @@
         targetArea.addEventListener('click', handleClick);
         downloadBtn.addEventListener('click', downloadResults);
         restartBtn.addEventListener('click', () => location.reload());
+        nextTrialBtn.addEventListener('click', startNextTrial);
 
         function startExperiment() {
             const participantId = document.getElementById('participant-id').value;
@@ -190,12 +193,15 @@
             getReadyBlock.style.display = 'block';
             targetArea.style.display = 'none';
             instructions.style.display = 'none';
-            setTimeout(() => {
-                getReadyBlock.style.display = 'none';
-                targetArea.style.display = 'block';
-                instructions.style.display = 'block';
-                runTrial();
-            }, 3000);
+            nextTrialBtn.style.display = 'block';
+        }
+
+        function startNextTrial() {
+            getReadyBlock.style.display = 'none';
+            targetArea.style.display = 'block';
+            instructions.style.display = 'block';
+            nextTrialBtn.style.display = 'none';
+            runTrial();
         }
 
         function runTrial() {
@@ -229,7 +235,7 @@
 
                 currentTrial++;
                 if (currentTrial < totalTrials) {
-                    setTimeout(startTrial, 2000);
+                    showGetReadyBlock();
                 } else {
                     showResults();
                 }
