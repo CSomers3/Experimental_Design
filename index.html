@@ -3,179 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reaction Time Test</title>
+    <title>Simple Reaction Time Test</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; background-color: #f0f0f0; }
-        #target-area { width: 200px; height: 200px; margin: 20px auto; border-radius: 50%; transition: background-color 0.1s; }
-        button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
-        #results { display: none; }
-        #reaction-time { font-size: 24px; font-weight: bold; }
-        .input-group { margin: 15px 0; }
-        #instructions { font-style: italic; color: #555; }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #target-area {
+            width: 200px;
+            height: 200px;
+            margin: 2rem auto;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #reaction-time {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
     </style>
 </head>
 <body>
-    <h1>Reaction Time Test</h1>
-    
-    <div id="setup">
-        <div class="input-group">
-            <label for="participant-id">Participant ID: </label>
-            <input type="text" id="participant-id" required>
-        </div>
-        <div class="input-group">
-            <label for="condition">Condition: </label>
-            <select id="condition" required>
-                <option value="baseline">Baseline</option>
-                <option value="sports">Sports</option>
-                <option value="caffeine">Caffeine</option>
-                <option value="sugar">Sugar</option>
-                <option value="alcohol">Alcohol</option>
-            </select>
-        </div>
-        <button id="start-btn">Start Test</button>
-    </div>
-    
-    <div id="experiment" style="display: none;">
-        <h2>Press SPACE when the circle turns green!</h2>
+    <div class="container">
+        <h1>Reaction Time Test</h1>
         <div id="target-area"></div>
         <p>Reaction Time: <span id="reaction-time">0</span> ms</p>
-        <p id="instructions">Get ready for the next trial...</p>
-    </div>
-    
-    <div id="results">
-        <h2>Test Results</h2>
-        <textarea id="result-data" rows="10" cols="50" readonly></textarea>
-        <br>
-        <button id="download-btn">Download Results</button>
-        <button id="restart-btn">Restart Test</button>
+        <p id="instructions">Click the circle when it turns green!</p>
+        <button id="start-btn">Start Test</button>
     </div>
 
     <script>
-        const startBtn = document.getElementById('start-btn');
-        const setup = document.getElementById('setup');
-        const experiment = document.getElementById('experiment');
         const targetArea = document.getElementById('target-area');
+        const startBtn = document.getElementById('start-btn');
         const reactionTimeDisplay = document.getElementById('reaction-time');
         const instructions = document.getElementById('instructions');
-        const results = document.getElementById('results');
-        const resultData = document.getElementById('result-data');
-        const downloadBtn = document.getElementById('download-btn');
-        const restartBtn = document.getElementById('restart-btn');
 
-        let startTime, endTime, stimulusTime;
-        let trials = [];
-        let currentTrial = 0;
-        const totalTrials = 5;
-        let isWaiting = false;
+        let startTime, endTime;
+        let isRunning = false;
 
-        startBtn.addEventListener('click', startExperiment);
-        downloadBtn.addEventListener('click', downloadResults);
-        restartBtn.addEventListener('click', () => location.reload());
-        document.addEventListener('keydown', handleKeyPress);
+        startBtn.addEventListener('click', startTest);
+        targetArea.addEventListener('click', handleClick);
 
-        function startExperiment() {
-            const participantId = document.getElementById('participant-id').value;
-            const condition = document.getElementById('condition').value;
-
-            if (!participantId) {
-                alert('Please enter a Participant ID');
-                return;
-            }
-
-            setup.style.display = 'none';
-            experiment.style.display = 'block';
-            trials = [];
-            currentTrial = 0;
-
-            runTrial(participantId, condition);
-        }
-
-        function runTrial(participantId, condition) {
+        function startTest() {
+            if (isRunning) return;
+            isRunning = true;
+            startBtn.style.display = 'none';
             targetArea.style.backgroundColor = 'red';
-            reactionTimeDisplay.textContent = '0';
             instructions.textContent = 'Wait for green...';
-            isWaiting = true;
-            startTime = new Date().getTime();
 
-            const delay = getRandomDelay();
             setTimeout(() => {
                 targetArea.style.backgroundColor = 'green';
-                stimulusTime = new Date().getTime();
-                instructions.textContent = 'Press SPACE now!';
-            }, delay);
+                startTime = new Date().getTime();
+            }, Math.random() * 3000 + 1000);
         }
 
-        function getRandomDelay() {
-            // Return a random delay between 1.5 and 4.5 seconds
-            return Math.floor(Math.random() * 3000) + 1500;
-        }
-
-        function handleKeyPress(event) {
-            if (event.code === 'Space' && experiment.style.display !== 'none') {
-                event.preventDefault();
-                if (isWaiting) {
-                    recordReactionTime();
-                }
-            }
-        }
-
-        function recordReactionTime() {
-            endTime = new Date().getTime();
-            let reactionTime;
-            
-            if (endTime < stimulusTime) {
-                reactionTime = -(stimulusTime - endTime);
-                instructions.textContent = 'Too early! Negative time recorded.';
+        function handleClick() {
+            if (!isRunning) return;
+            if (targetArea.style.backgroundColor === 'green') {
+                endTime = new Date().getTime();
+                const reactionTime = endTime - startTime;
+                reactionTimeDisplay.textContent = reactionTime;
+                isRunning = false;
+                startBtn.style.display = 'inline-block';
+                startBtn.textContent = 'Try Again';
+                instructions.textContent = 'Click "Try Again" for another test.';
             } else {
-                reactionTime = endTime - stimulusTime;
+                instructions.textContent = 'Too early! Wait for green.';
             }
-            
-            reactionTimeDisplay.textContent = reactionTime;
-
-            const participantId = document.getElementById('participant-id').value;
-            const condition = document.getElementById('condition').value;
-
-            trials.push({ 
-                participantId, 
-                condition, 
-                reactionTime, 
-                timestamp: new Date().toISOString(),
-                trialNumber: currentTrial + 1,
-                stimulusDelay: stimulusTime - startTime
-            });
-
-            currentTrial++;
-            isWaiting = false;
-
-            if (currentTrial < totalTrials) {
-                instructions.textContent = `Trial ${currentTrial + 1} of ${totalTrials}. Get ready...`;
-                setTimeout(() => runTrial(participantId, condition), getRandomInterTrialInterval());
-            } else {
-                showResults();
-            }
-        }
-
-        function getRandomInterTrialInterval() {
-            // Return a random interval between 1 and 3 seconds
-            return Math.floor(Math.random() * 2000) + 1000;
-        }
-
-        function showResults() {
-            experiment.style.display = 'none';
-            results.style.display = 'block';
-            resultData.value = JSON.stringify(trials, null, 2);
-        }
-
-        function downloadResults() {
-            const blob = new Blob([JSON.stringify(trials, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'reaction_time_results.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
         }
     </script>
 </body>
