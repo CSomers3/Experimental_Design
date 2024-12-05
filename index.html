@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reaction Time Test</title>
+    <title>Caffeine Reaction Time Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -98,7 +98,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Caffiene Reaction Time Test</h1>
+        <h1>Caffeine Reaction Time Test</h1>
         
         <div id="setup">
             <div class="form-group">
@@ -140,153 +140,169 @@
     </div>
 
     <script>
-        const setupDiv = document.getElementById('setup');
-        const testDiv = document.getElementById('test');
-        const resultsDiv = document.getElementById('results');
-        const startBtn = document.getElementById('start-btn');
-        const targetArea = document.getElementById('target-area');
-        const reactionTimeDisplay = document.getElementById('reaction-time');
-        const instructions = document.getElementById('instructions');
-        const trialCounter = document.getElementById('trial-counter');
-        const averageTimeDisplay = document.getElementById('average-time');
-        const downloadBtn = document.getElementById('download-btn');
-        const restartBtn = document.getElementById('restart-btn');
-        const getReadyBlock = document.getElementById('get-ready');
-        const nextTrialBtn = document.getElementById('next-trial-btn');
+        class ReactionTimeExperiment {
+            constructor(config = {}) {
+                this.config = {
+                    totalTrials: 4,
+                    minDelay: 1000,
+                    maxDelay: 3000,
+                    ...config
+                };
 
-        let startTime, endTime, delayTime;
-        let isRunning = false;
-        let trials = [];
-        let currentTrial = 0;
-        const totalTrials = 4;
-        const tags = [];
+                this.elements = {
+                    setup: document.getElementById('setup'),
+                    test: document.getElementById('test'),
+                    results: document.getElementById('results'),
+                    targetArea: document.getElementById('target-area'),
+                    reactionTimeDisplay: document.getElementById('reaction-time'),
+                    instructions: document.getElementById('instructions'),
+                    trialCounter: document.getElementById('trial-counter'),
+                    averageTimeDisplay: document.getElementById('average-time')
+                };
 
-        startBtn.addEventListener('click', startExperiment);
-        targetArea.addEventListener('click', handleClick);
-        downloadBtn.addEventListener('click', downloadResults);
-        restartBtn.addEventListener('click', () => location.reload());
-        nextTrialBtn.addEventListener('click', startNextTrial);
+                this.state = {
+                    trials: [],
+                    currentTrial: 0,
+                    isRunning: false,
+                    tags: []
+                };
 
-        function startExperiment() {
-            const participantId = document.getElementById('participant-id').value;
-            const coffeeLevel = document.getElementById('drink-level').value;
-            if (!participantId || !coffeeLevel) {
-                alert('Please fill in all fields');
-                return;
+                this.bindEvents();
             }
-            setupDiv.style.display = 'none';
-            testDiv.style.display = 'block';
-            trials = [];
-            currentTrial = 0;
-            startTrial();
-        }
 
-        function startTrial() {
-            if (currentTrial > 0) {
-                showGetReadyBlock();
-            } else {
-                runTrial();
+            bindEvents() {
+                document.getElementById('start-btn').addEventListener('click', () => this.startExperiment());
+                this.elements.targetArea.addEventListener('click', () => this.handleClick());
+                document.getElementById('download-btn').addEventListener('click', () => this.downloadResults());
+                document.getElementById('restart-btn').addEventListener('click', () => location.reload());
+                document.getElementById('add-tag-btn').addEventListener('click', () => this.addTag());
             }
-        }
 
-        function showGetReadyBlock() {
-            getReadyBlock.style.display = 'block';
-            targetArea.style.display = 'none';
-            instructions.style.display = 'none';
-            nextTrialBtn.style.display = 'block';
-        }
+            startExperiment() {
+                const participantId = document.getElementById('participant-id').value;
+                const coffeeLevel = document.getElementById('drink-level').value;
 
-        function startNextTrial() {
-            getReadyBlock.style.display = 'none';
-            targetArea.style.display = 'block';
-            instructions.style.display = 'block';
-            nextTrialBtn.style.display = 'none';
-            runTrial();
-        }
+                if (!participantId || !coffeeLevel) {
+                    alert('Please fill in all fields');
+                    return;
+                }
 
-        function runTrial() {
-            isRunning = true;
-            targetArea.style.backgroundColor = 'red';
-            instructions.textContent = 'Wait for green...';
-            trialCounter.textContent = currentTrial + 1;
-            delayTime = Math.floor(Math.random() * 3000) + 1000;
-            setTimeout(() => {
-                targetArea.style.backgroundColor = 'green';
-                startTime = new Date().getTime();
-            }, delayTime);
-        }
+                this.elements.setup.style.display = 'none';
+                this.elements.test.style.display = 'block';
+                this.state.trials = [];
+                this.state.currentTrial = 0;
+                this.runTrial();
+            }
 
-        function handleClick() {
-            if (!isRunning) return;
-            if (targetArea.style.backgroundColor === 'green') {
-                endTime = new Date().getTime();
-                const reactionTime = endTime - startTime;
-                reactionTimeDisplay.textContent = reactionTime;
-                isRunning = false;
+            runTrial() {
+                this.state.isRunning = true;
+                this.elements.targetArea.style.backgroundColor = 'red';
+                this.elements.instructions.textContent = 'Wait for green...';
+                this.elements.trialCounter.textContent = this.state.currentTrial + 1;
 
-                trials.push({
+                const delayTime = this.generatePreciseDelay();
+                
+                const startWaitTime = performance.now();
+                const checkReadiness = (currentTime) => {
+                    if (currentTime - startWaitTime >= delayTime) {
+                        this.elements.targetArea.style.backgroundColor = 'green';
+                        this.startTime = performance.now();
+                        this.state.isRunning = true;
+                    } else {
+                        requestAnimationFrame(checkReadiness);
+                    }
+                };
+
+                requestAnimationFrame(checkReadiness);
+            }
+
+            generatePreciseDelay() {
+                const random = window.crypto.getRandomValues(new Uint32Array(1))[0];
+                return this.config.minDelay + (random % (this.config.maxDelay - this.config.minDelay));
+            }
+
+            handleClick() {
+                if (!this.state.isRunning) return;
+
+                const currentTime = performance.now();
+                const reactionTime = Math.round(currentTime - this.startTime);
+
+                if (this.elements.targetArea.style.backgroundColor === 'green') {
+                    this.recordTrial(reactionTime);
+                } else {
+                    this.elements.instructions.textContent = 'Too early! Wait for green.';
+                }
+            }
+
+            recordTrial(reactionTime) {
+                const trialData = {
                     participantId: document.getElementById('participant-id').value,
                     coffeeLevel: document.getElementById('drink-level').value,
-                    reactionTime: reactionTime,
-                    delayTime: delayTime,
-                    tags: [...tags],
+                    reactionTime,
+                    tags: [...this.state.tags],
                     timestamp: new Date().toISOString()
-                });
+                };
 
-                currentTrial++;
-                if (currentTrial < totalTrials) {
-                    showGetReadyBlock();
+                this.state.trials.push(trialData);
+                this.elements.reactionTimeDisplay.textContent = reactionTime;
+                this.state.currentTrial++;
+
+                if (this.state.currentTrial < this.config.totalTrials) {
+                    this.runTrial();
                 } else {
-                    showResults();
+                    this.showResults();
                 }
-            } else {
-                instructions.textContent = 'Too early! Wait for green.';
+            }
+
+            showResults() {
+                this.elements.test.style.display = 'none';
+                this.elements.results.style.display = 'block';
+
+                const averageTime = this.state.trials.reduce((sum, trial) => sum + trial.reactionTime, 0) / this.config.totalTrials;
+                this.elements.averageTimeDisplay.textContent = averageTime.toFixed(2);
+            }
+
+            downloadResults() {
+                const blob = new Blob([JSON.stringify(this.state.trials, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reaction_time_results_${new Date().toISOString()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            addTag() {
+                const tagInput = document.getElementById('tag-input-field');
+                const tag = tagInput.value.trim();
+                
+                if (tag && !this.state.tags.includes(tag)) {
+                    this.state.tags.push(tag);
+                    this.renderTags();
+                    tagInput.value = '';
+                }
+            }
+
+            renderTags() {
+                const tagContainer = document.getElementById('tag-input');
+                tagContainer.innerHTML = this.state.tags.map(tag => 
+                    `<span class="tag">${tag}<span class="remove-tag" data-tag="${tag}">&times;</span></span>`
+                ).join('');
+
+                tagContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-tag')) {
+                        const tagToRemove = e.target.getAttribute('data-tag');
+                        this.state.tags = this.state.tags.filter(tag => tag !== tagToRemove);
+                        this.renderTags();
+                    }
+                });
             }
         }
 
-        function showResults() {
-            testDiv.style.display = 'none';
-            resultsDiv.style.display = 'block';
-            const averageTime = trials.reduce((sum, trial) => sum + trial.reactionTime, 0) / totalTrials;
-            averageTimeDisplay.textContent = averageTime.toFixed(2);
-        }
-
-        function downloadResults() {
-            const blob = new Blob([JSON.stringify(trials, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'reaction_time_results.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function addTag(tag) {
-            if (tag && !tags.includes(tag)) {
-                tags.push(tag);
-                renderTags();
-            }
-        }
-
-        function renderTags() {
-            const tagInput = document.getElementById('tag-input');
-            tagInput.innerHTML = '';
-            tags.forEach((tag) => {
-                tagInput.innerHTML += `<span class="tag">${tag}<span class="remove-tag" onclick="removeTag('${tag}')">&times;</span></span>`;
-            });
-        }
-
-        function removeTag(tag) {
-            tags.splice(tags.indexOf(tag), 1);
-            renderTags();
-        }
-
-        document.getElementById('add-tag-btn').addEventListener('click', () => {
-            const tagInputField = document.getElementById('tag-input-field');
-            addTag(tagInputField.value);
-            tagInputField.value = '';
+        document.addEventListener('DOMContentLoaded', () => {
+            new ReactionTimeExperiment();
         });
     </script>
 </body>
