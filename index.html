@@ -10,7 +10,7 @@
             background-color: #f4f4f4;
         }
         #target-area {
-            transition: all 0.3s ease;
+            transition: background-color 0s ease;
         }
         .fullscreen-target {
             position: fixed;
@@ -116,11 +116,21 @@
         </div>
 
         <div id="test" class="hidden text-center">
-            <div id="target-area" class="bg-red-500 fixed top-0 left-0 w-full h-full z-50 cursor-pointer"></div>
+            <div 
+                id="target-area" 
+                class="fixed top-0 left-0 w-full h-full z-50 cursor-pointer bg-red-500"
+            ></div>
             
-            <div class="mt-8 space-y-4">
-                <div id="get-ready" class="text-2xl font-semibold text-gray-700"></div>
-                <p id="instructions" class="text-lg text-gray-600"></p>
+            <div class="mt-8 space-y-4 relative z-60">
+                <div 
+                    id="instructions" 
+                    class="text-2xl font-semibold text-gray-700 mb-4"
+                >
+                    Experimental Instructions
+                </div>
+                <p class="text-lg text-gray-600 mb-4">
+                    When the screen turns RED, wait. When it turns GREEN, click as quickly as possible!
+                </p>
                 <p class="text-gray-700">Trial <span id="trial-counter">1</span> of 5</p>
                 <div class="text-3xl font-bold text-gray-800">
                     Reaction Time: <span id="reaction-time">0</span> ms
@@ -157,7 +167,7 @@
         class ReactionTimeExperiment {
             constructor(config = {}) {
                 this.config = {
-                    totalTrials: 5,  // Increased to 5 for more reliable data
+                    totalTrials: 5,
                     minDelay: 1000,
                     maxDelay: 3000,
                     earlyClickPenalty: -500
@@ -171,14 +181,15 @@
                     reactionTimeDisplay: document.getElementById('reaction-time'),
                     instructions: document.getElementById('instructions'),
                     trialCounter: document.getElementById('trial-counter'),
-                    averageTimeDisplay: document.getElementById('average-time'),
-                    getReady: document.getElementById('get-ready')
+                    averageTimeDisplay: document.getElementById('average-time')
                 };
 
                 this.state = {
                     trials: [],
                     currentTrial: 0,
-                    isRunning: false
+                    experimentState: 'NOT_STARTED',
+                    startTime: null,
+                    stimulusDelay: 0 // New property to track stimulus delay
                 };
 
                 this.bindEvents();
@@ -201,64 +212,75 @@
                     return;
                 }
 
-                this.elements.setup.classList.add('hidden');
-                this.elements.test.classList.remove('hidden');
                 this.state.participantDetails = {
                     id: participantId,
                     caffeineIntake: caffeineIntake.value,
                     timeSinceCaffeine: timeSinceCaffeine.value
                 };
+
+                this.elements.setup.classList.add('hidden');
+                this.elements.test.classList.remove('hidden');
                 this.state.trials = [];
                 this.state.currentTrial = 0;
                 this.runTrial();
             }
 
             runTrial() {
-                this.state.isRunning = false;
+                // Reset state
+                this.state.experimentState = 'WAITING';
+                this.state.startTime = null;
+
+                // Set target to red immediately
                 this.elements.targetArea.style.backgroundColor = 'red';
-                this.elements.instructions.textContent = 'Wait for the screen to turn green...';
+                this.elements.instructions.textContent = 'Wait for the screen to turn GREEN';
                 this.elements.trialCounter.textContent = this.state.currentTrial + 1;
-                this.elements.getReady.textContent = '';
 
-                const delayTime = this.generatePreciseDelay();
+                // Schedule green screen
+                this.state.stimulusDelay = this.generateRandomDelay();
                 
-                const startWaitTime = performance.now();
-                const checkReadiness = (currentTime) => {
-                    if (currentTime - startWaitTime >= delayTime) {
-                        this.elements.targetArea.style.backgroundColor = 'green';
-                        this.startTime = performance.now();
-                        this.state.isRunning = true;
-                    } else {
-                        requestAnimationFrame(checkReadiness);
-                    }
-                };
-
-                requestAnimationFrame(checkReadiness);
+                setTimeout(() => {
+                    // Instantaneous color change
+                    this.elements.targetArea.style.backgroundColor = 'green';
+                    this.elements.instructions.textContent = 'Click NOW!';
+                    this.state.experimentState = 'READY';
+                    this.state.startTime = performance.now();
+                }, this.state.stimulusDelay);
             }
 
-            generatePreciseDelay() {
+            generateRandomDelay() {
                 const random = window.crypto.getRandomValues(new Uint32Array(1))[0];
                 return this.config.minDelay + (random % (this.config.maxDelay - this.config.minDelay));
             }
 
             handleClick() {
-                if (!this.state.isRunning) return;
-
                 const currentTime = performance.now();
-                const reactionTime = Math.round(currentTime - this.startTime);
 
-                if (this.elements.targetArea.style.backgroundColor === 'green') {
-                    this.recordTrial(reactionTime);
-                } else {
-                    this.recordTrial(this.config.earlyClickPenalty);
-                    this.elements.instructions.textContent = `Early click! Penalty: ${this.config.earlyClickPenalty} ms`;
+                switch(this.state.experimentState) {
+                    case 'WAITING':
+                        // Clicked too soon
+                        this.elements.instructions.textContent = 'Too soon! Wait for GREEN';
+                        this.recordTrial(this.config.earlyClickPenalty);
+                        break;
+
+                    case 'READY':
+                        const reactionTime = Math.round(currentTime - this.state.startTime);
+                        this.recordTrial(reactionTime);
+                        break;
+
+                    case 'CLICKED':
+                        // Prevent multiple clicks
+                        break;
                 }
             }
 
             recordTrial(reactionTime) {
+                // Prevent multiple recordings
+                if (this.state.experimentState === 'CLICKED') return;
+
                 const trialData = {
                     ...this.state.participantDetails,
                     reactionTime,
+                    stimulusDelay: this.state.stimulusDelay, // Added stimulus delay to trial data
                     isEarlyClick: reactionTime < 0,
                     timestamp: new Date().toISOString()
                 };
@@ -266,9 +288,9 @@
                 this.state.trials.push(trialData);
                 this.elements.reactionTimeDisplay.textContent = reactionTime;
                 this.state.currentTrial++;
+                this.state.experimentState = 'CLICKED';
 
                 if (this.state.currentTrial < this.config.totalTrials) {
-                    this.elements.getReady.textContent = 'Get ready for the next trial!';
                     setTimeout(() => this.runTrial(), 2000);
                 } else {
                     this.showResults();
