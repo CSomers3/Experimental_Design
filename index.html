@@ -3,139 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caffeine Reaction Time Test</title>
+    <title>Caffeine Reaction Time Experiment</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        .container {
-            text-align: center;
-            background-color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            width: 100%;
+            background-color: #f4f4f4;
         }
         #target-area {
-            width: 200px;
-            height: 200px;
-            margin: 2rem auto;
-            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .fullscreen-target {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 50;
             cursor: pointer;
-            transition: background-color 0s ease;
-        }
-        button {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #reaction-time {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input[type="text"], select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .tag-input {
-            display: flex;
-            flex-wrap: wrap;
-            border: 1px solid #bbb;
-            border-radius: 4px;
-            padding: 8px;
-            margin-top: 10px;
-        }
-        .tag {
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 4px;
-            padding: 5px 10px;
-            margin: 4px;
-            display: inline-block;
-        }
-        .remove-tag {
-            cursor: pointer;
-            margin-left: 6px;
-            font-weight: bold;
-        }
-        #get-ready {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #333;
-            margin: 2rem 0;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Caffeine Reaction Time Test</h1>
-        
-        <div id="setup">
-            <div class="form-group">
-                <label for="participant-id">Participant ID:</label>
-                <input type="text" id="participant-id" required>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="container mx-auto px-4 max-w-2xl">
+        <div id="setup" class="bg-white shadow-lg rounded-lg p-8">
+            <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Caffeine Reaction Time Experiment</h1>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2" for="participant-id">
+                        Participant Identifier
+                    </label>
+                    <input 
+                        type="text" 
+                        id="participant-id" 
+                        required 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter unique identifier"
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2" for="caffeine-intake">
+                        Caffeine Intake
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <label class="block">
+                            <input 
+                                type="radio" 
+                                name="caffeine-intake" 
+                                value="0" 
+                                class="mr-2"
+                            > No Caffeine
+                        </label>
+                        <label class="block">
+                            <input 
+                                type="radio" 
+                                name="caffeine-intake" 
+                                value="1" 
+                                class="mr-2"
+                            > 1 Cup
+                        </label>
+                        <label class="block">
+                            <input 
+                                type="radio" 
+                                name="caffeine-intake" 
+                                value="2" 
+                                class="mr-2"
+                            > 2+ Cups
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">
+                        Time Since Last Caffeine
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <label class="block">
+                            <input 
+                                type="radio" 
+                                name="time-since-caffeine" 
+                                value="0" 
+                                class="mr-2"
+                            > <1 Hour
+                        </label>
+                        <label class="block">
+                            <input 
+                                type="radio" 
+                                name="time-since-caffeine" 
+                                value="1" 
+                                class="mr-2"
+                            > 1-3 Hours
+                        </label>
+                        <label class="block">
+                            <input 
+                                type="radio" 
+                                name="time-since-caffeine" 
+                                value="2" 
+                                class="mr-2"
+                            > >3 Hours
+                        </label>
+                    </div>
+                </div>
+
+                <button 
+                    id="start-btn" 
+                    class="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 transition duration-300"
+                >
+                    Begin Experiment
+                </button>
             </div>
-            <div class="form-group">
-                <label for="drink-level">Coffee Consumption:</label>
-                <select id="drink-level" required>
-                    <option value="0">None</option>
-                    <option value="1">1 Coffee</option>
-                    <option value="2">2 Coffee</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="tag-input-field">Add Tags:</label>
-                <input type="text" id="tag-input-field">
-                <button id="add-tag-btn">Add Tag</button>
-                <div id="tag-input" class="tag-input"></div>
-            </div>
-            <button id="start-btn">Start Test</button>
         </div>
 
-        <div id="test" style="display: none;">
-            <div id="get-ready" style="display: none;">Get ready for the next trial!</div>
-            <div id="target-area"></div>
-            <p>Reaction Time: <span id="reaction-time">0</span> ms</p>
-            <p id="instructions">Click the circle when it turns green!</p>
-            <p>Trial <span id="trial-counter">1</span> of 4</p>
-            <button id="next-trial-btn" style="display: none;">Next Trial</button>
+        <div id="test" class="hidden text-center">
+            <div id="target-area" class="bg-red-500 fixed top-0 left-0 w-full h-full z-50 cursor-pointer"></div>
+            
+            <div class="mt-8 space-y-4">
+                <div id="get-ready" class="text-2xl font-semibold text-gray-700"></div>
+                <p id="instructions" class="text-lg text-gray-600"></p>
+                <p class="text-gray-700">Trial <span id="trial-counter">1</span> of 5</p>
+                <div class="text-3xl font-bold text-gray-800">
+                    Reaction Time: <span id="reaction-time">0</span> ms
+                </div>
+            </div>
         </div>
 
-        <div id="results" style="display: none;">
-            <h2>Test Complete</h2>
-            <p>Average Reaction Time: <span id="average-time"></span> ms</p>
-            <button id="download-btn">Download Results</button>
-            <button id="restart-btn">Restart Test</button>
+        <div id="results" class="hidden bg-white shadow-lg rounded-lg p-8 text-center">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Experiment Results</h2>
+            <div class="space-y-4">
+                <p class="text-2xl">
+                    Average Reaction Time: 
+                    <span id="average-time" class="font-bold text-blue-600"></span> ms
+                </p>
+                <div class="flex justify-center space-x-4">
+                    <button 
+                        id="download-btn" 
+                        class="bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-600 transition duration-300"
+                    >
+                        Download Results
+                    </button>
+                    <button 
+                        id="restart-btn" 
+                        class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition duration-300"
+                    >
+                        Restart Experiment
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -143,11 +157,10 @@
         class ReactionTimeExperiment {
             constructor(config = {}) {
                 this.config = {
-                    totalTrials: 4,
+                    totalTrials: 5,  // Increased to 5 for more reliable data
                     minDelay: 1000,
                     maxDelay: 3000,
-                    earlyClickPenalty: -500,
-                    ...config
+                    earlyClickPenalty: -500
                 };
 
                 this.elements = {
@@ -158,48 +171,54 @@
                     reactionTimeDisplay: document.getElementById('reaction-time'),
                     instructions: document.getElementById('instructions'),
                     trialCounter: document.getElementById('trial-counter'),
-                    averageTimeDisplay: document.getElementById('average-time')
+                    averageTimeDisplay: document.getElementById('average-time'),
+                    getReady: document.getElementById('get-ready')
                 };
 
                 this.state = {
                     trials: [],
                     currentTrial: 0,
-                    isRunning: false,
-                    tags: []
+                    isRunning: false
                 };
 
                 this.bindEvents();
             }
 
             bindEvents() {
-                document.getElementById('start-btn').addEventListener('click', () => this.startExperiment());
+                document.getElementById('start-btn').addEventListener('click', () => this.validateAndStart());
                 this.elements.targetArea.addEventListener('click', () => this.handleClick());
                 document.getElementById('download-btn').addEventListener('click', () => this.downloadResults());
                 document.getElementById('restart-btn').addEventListener('click', () => location.reload());
-                document.getElementById('add-tag-btn').addEventListener('click', () => this.addTag());
             }
 
-            startExperiment() {
+            validateAndStart() {
                 const participantId = document.getElementById('participant-id').value;
-                const coffeeLevel = document.getElementById('drink-level').value;
+                const caffeineIntake = document.querySelector('input[name="caffeine-intake"]:checked');
+                const timeSinceCaffeine = document.querySelector('input[name="time-since-caffeine"]:checked');
 
-                if (!participantId || !coffeeLevel) {
-                    alert('Please fill in all fields');
+                if (!participantId || !caffeineIntake || !timeSinceCaffeine) {
+                    alert('Please complete all sections of the form.');
                     return;
                 }
 
-                this.elements.setup.style.display = 'none';
-                this.elements.test.style.display = 'block';
+                this.elements.setup.classList.add('hidden');
+                this.elements.test.classList.remove('hidden');
+                this.state.participantDetails = {
+                    id: participantId,
+                    caffeineIntake: caffeineIntake.value,
+                    timeSinceCaffeine: timeSinceCaffeine.value
+                };
                 this.state.trials = [];
                 this.state.currentTrial = 0;
                 this.runTrial();
             }
 
             runTrial() {
-                this.state.isRunning = true;
+                this.state.isRunning = false;
                 this.elements.targetArea.style.backgroundColor = 'red';
-                this.elements.instructions.textContent = 'Wait for green...';
+                this.elements.instructions.textContent = 'Wait for the screen to turn green...';
                 this.elements.trialCounter.textContent = this.state.currentTrial + 1;
+                this.elements.getReady.textContent = '';
 
                 const delayTime = this.generatePreciseDelay();
                 
@@ -238,11 +257,9 @@
 
             recordTrial(reactionTime) {
                 const trialData = {
-                    participantId: document.getElementById('participant-id').value,
-                    coffeeLevel: document.getElementById('drink-level').value,
+                    ...this.state.participantDetails,
                     reactionTime,
                     isEarlyClick: reactionTime < 0,
-                    tags: [...this.state.tags],
                     timestamp: new Date().toISOString()
                 };
 
@@ -251,15 +268,16 @@
                 this.state.currentTrial++;
 
                 if (this.state.currentTrial < this.config.totalTrials) {
-                    this.runTrial();
+                    this.elements.getReady.textContent = 'Get ready for the next trial!';
+                    setTimeout(() => this.runTrial(), 2000);
                 } else {
                     this.showResults();
                 }
             }
 
             showResults() {
-                this.elements.test.style.display = 'none';
-                this.elements.results.style.display = 'block';
+                this.elements.test.classList.add('hidden');
+                this.elements.results.classList.remove('hidden');
 
                 const validTrials = this.state.trials.filter(trial => trial.reactionTime >= 0);
                 const averageTime = validTrials.length > 0 
@@ -279,32 +297,6 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-            }
-
-            addTag() {
-                const tagInput = document.getElementById('tag-input-field');
-                const tag = tagInput.value.trim();
-                
-                if (tag && !this.state.tags.includes(tag)) {
-                    this.state.tags.push(tag);
-                    this.renderTags();
-                    tagInput.value = '';
-                }
-            }
-
-            renderTags() {
-                const tagContainer = document.getElementById('tag-input');
-                tagContainer.innerHTML = this.state.tags.map(tag => 
-                    `<span class="tag">${tag}<span class="remove-tag" data-tag="${tag}">&times;</span></span>`
-                ).join('');
-
-                tagContainer.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('remove-tag')) {
-                        const tagToRemove = e.target.getAttribute('data-tag');
-                        this.state.tags = this.state.tags.filter(tag => tag !== tagToRemove);
-                        this.renderTags();
-                    }
-                });
             }
         }
 
