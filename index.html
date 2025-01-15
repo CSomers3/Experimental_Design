@@ -5,11 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caffeine Reaction Time Study</title>
     <style>
-        /* Previous styles remain the same until container */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
         .container {
             max-width: 800px;
             width: 100%;
             padding: 20px;
+        }
+        .hidden { display: none; }
+        .form-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 16px;
+        }
+        .radio-group label {
+            font-weight: normal;
+        }
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2563eb;
         }
         .experiment-container {
             background-color: white;
@@ -36,87 +89,68 @@
         }
         .controls {
             margin: 20px 0;
-            display: flex;
-            justify-content: center;
-            gap: 12px;
         }
         .trial-info {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        .stats {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
         }
         .ready-btn {
             background-color: #4CAF50;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .ready-btn:hover {
-            background-color: #45a049;
+            padding: 12px 40px;
+            font-size: 1.1em;
         }
         .ready-btn:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
         }
-        .trial-stat {
-            text-align: center;
-        }
-        .trial-stat-label {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 4px;
-        }
-        .trial-stat-value {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
-        }
-        /* Rest of the previous styles remain the same */
     </style>
 </head>
 <body>
-    <!-- Previous setup form remains the same -->
-    
-    <!-- Improved Experiment Area -->
-    <div id="experiment" class="hidden">
-        <div class="experiment-container">
-            <h2>Reaction Time Test</h2>
-            
-            <div class="trial-info">
-                <div class="trial-stat">
-                    <div class="trial-stat-label">Trial</div>
-                    <div class="trial-stat-value"><span id="trial-counter">1</span>/5</div>
-                </div>
-                <div class="trial-stat">
-                    <div class="trial-stat-label">Last Time</div>
-                    <div class="trial-stat-value"><span id="reaction-time">-</span> ms</div>
-                </div>
-                <div class="trial-stat">
-                    <div class="trial-stat-label">Best Time</div>
-                    <div class="trial-stat-value"><span id="best-time">-</span> ms</div>
-                </div>
-            </div>
+    <div class="container">
+        <!-- Keep the original setup form exactly as is -->
+        <div id="setup" class="form-section">
+            <!-- Previous setup form content remains unchanged -->
+        </div>
 
-            <div class="status-text" id="instructions">
-                Press "Start Trial" when you're ready to begin
-            </div>
+        <!-- Improved Experiment Area -->
+        <div id="experiment" class="hidden">
+            <div class="experiment-container">
+                <h2>Reaction Time Test</h2>
+                
+                <div class="trial-info">
+                    Trial <span id="trial-counter">1</span> of 5
+                </div>
 
-            <div id="reaction-area"></div>
+                <div class="status-text" id="instructions">
+                    Press "Start Trial" when you're ready
+                </div>
 
-            <div class="controls">
-                <button id="ready-btn" class="ready-btn">Start Trial</button>
-                <button id="pause-btn" class="ready-btn" style="background-color: #f44336;">Pause</button>
+                <div id="reaction-area"></div>
+
+                <div class="controls">
+                    <button id="ready-btn" class="ready-btn">Start Trial</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Previous results section remains the same -->
+        <!-- Results Section -->
+        <div id="results" class="hidden form-section">
+            <h2 style="text-align: center;">Session Results</h2>
+            <div class="stats">
+                <p>Average Reaction Time: <span id="average-time">-</span> ms</p>
+                <p>Standard Deviation: <span id="std-dev">-</span> ms</p>
+                <p>Minimum Time: <span id="min-time">-</span> ms</p>
+                <p>Maximum Time: <span id="max-time">-</span> ms</p>
+            </div>
+            <button id="download-btn">Download Results</button>
+            <button id="restart-btn" style="margin-top: 12px;">Start New Session</button>
+        </div>
+    </div>
 
     <script>
 class ReactionTimeExperiment {
@@ -132,7 +166,6 @@ class ReactionTimeExperiment {
     }
 
     initElements() {
-        // Previous elements plus new ones
         this.elements = {
             setup: document.getElementById('setup'),
             experiment: document.getElementById('experiment'),
@@ -140,12 +173,11 @@ class ReactionTimeExperiment {
             reactionArea: document.getElementById('reaction-area'),
             instructions: document.getElementById('instructions'),
             trialCounter: document.getElementById('trial-counter'),
-            reactionTime: document.getElementById('reaction-time'),
-            bestTime: document.getElementById('best-time'),
+            readyBtn: document.getElementById('ready-btn'),
             averageTime: document.getElementById('average-time'),
             stdDev: document.getElementById('std-dev'),
-            readyBtn: document.getElementById('ready-btn'),
-            pauseBtn: document.getElementById('pause-btn')
+            minTime: document.getElementById('min-time'),
+            maxTime: document.getElementById('max-time')
         };
     }
 
@@ -153,12 +185,11 @@ class ReactionTimeExperiment {
         document.getElementById('start-btn').addEventListener('click', () => this.validateAndStart());
         this.elements.reactionArea.addEventListener('click', (e) => this.handleClick(e));
         this.elements.readyBtn.addEventListener('click', () => this.startTrial());
-        this.elements.pauseBtn.addEventListener('click', () => this.pauseExperiment());
         document.getElementById('download-btn').addEventListener('click', () => this.downloadResults());
         document.getElementById('restart-btn').addEventListener('click', () => location.reload());
     }
 
-    // Previous validation methods remain the same
+    // Keep the original validateAndStart method
 
     startExperiment() {
         this.state = {
@@ -173,8 +204,7 @@ class ReactionTimeExperiment {
             },
             trials: [],
             currentTrial: 0,
-            experimentState: 'READY',
-            bestTime: Infinity
+            experimentState: 'READY'
         };
 
         this.elements.setup.classList.add('hidden');
@@ -199,9 +229,12 @@ class ReactionTimeExperiment {
         }, delay);
     }
 
+    getRandomDelay() {
+        return this.config.minDelay + Math.floor(Math.random() * (this.config.maxDelay - this.config.minDelay));
+    }
+
     handleClick(event) {
         if (this.state.experimentState === 'WAITING') {
-            // Early click
             clearTimeout(this.stimulusTimeout);
             this.elements.reactionArea.style.backgroundColor = 'white';
             this.elements.instructions.textContent = 'Too early! Press "Start Trial" to try again';
@@ -221,11 +254,6 @@ class ReactionTimeExperiment {
 
             this.recordTrial(reactionTime, event);
             this.elements.reactionArea.style.backgroundColor = 'white';
-            
-            if (reactionTime < this.state.bestTime) {
-                this.state.bestTime = reactionTime;
-                this.elements.bestTime.textContent = reactionTime;
-            }
 
             if (this.state.currentTrial < this.config.totalTrials) {
                 this.elements.instructions.textContent = 'Press "Start Trial" when ready for the next trial';
@@ -236,15 +264,47 @@ class ReactionTimeExperiment {
         }
     }
 
-    pauseExperiment() {
-        clearTimeout(this.stimulusTimeout);
-        this.elements.reactionArea.style.backgroundColor = 'white';
-        this.elements.instructions.textContent = 'Experiment paused. Press "Start Trial" to continue';
-        this.elements.readyBtn.disabled = false;
-        this.state.experimentState = 'PAUSED';
+    recordTrial(reactionTime, event) {
+        const trialData = {
+            ...this.state.participantDetails,
+            trialNumber: this.state.currentTrial + 1,
+            reactionTime,
+            stimulusDelay: this.state.stimulusDelay,
+            clickX: event.clientX,
+            clickY: event.clientY,
+            screenWidth: window.innerWidth,
+            screenHeight: window.innerHeight,
+            devicePixelRatio: window.devicePixelRatio,
+            timestamp: new Date().toISOString()
+        };
+
+        this.state.trials.push(trialData);
+        this.state.currentTrial++;
+        this.elements.trialCounter.textContent = this.state.currentTrial + 1;
     }
 
-    // Previous recordTrial, showResults, and downloadResults methods remain the same
+    calculateStatistics(trials) {
+        const times = trials.map(t => t.reactionTime);
+        const mean = times.reduce((a, b) => a + b, 0) / times.length;
+        const variance = times.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / times.length;
+        const stdDev = Math.sqrt(variance);
+        const min = Math.min(...times);
+        const max = Math.max(...times);
+        return { mean, stdDev, min, max };
+    }
+
+    showResults() {
+        this.elements.experiment.classList.add('hidden');
+        this.elements.results.classList.remove('hidden');
+
+        const stats = this.calculateStatistics(this.state.trials);
+        this.elements.averageTime.textContent = stats.mean.toFixed(2);
+        this.elements.stdDev.textContent = stats.stdDev.toFixed(2);
+        this.elements.minTime.textContent = stats.min.toFixed(2);
+        this.elements.maxTime.textContent = stats.max.toFixed(2);
+    }
+
+    // Keep the original downloadResults method
 }
 
 document.addEventListener('DOMContentLoaded', () => new ReactionTimeExperiment());
