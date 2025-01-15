@@ -3,209 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caffeine Reaction Time Experiment</title>
+    <title>Caffeine Reaction Time Study</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { max-width: 600px; width: 100%; padding: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+        }
         .hidden { display: none; }
-        .bg-white { background-color: white; }
-        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-        .rounded-lg { border-radius: 0.5rem; }
-        .p-8 { padding: 2rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .text-center { text-align: center; }
-        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-        .font-bold { font-weight: 700; }
-        .space-y-4 > * + * { margin-top: 1rem; }
-        .w-full { width: 100%; }
-        input[type="text"], button { width: 100%; padding: 0.5rem; margin-top: 0.5rem; }
-        button { background-color: #3b82f6; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #2563eb; }
-        #target-area { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; cursor: pointer; }
-        .relative { position: relative; }
-        .z-60 { z-index: 60; }
+        .form-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 16px;
+        }
+        .radio-group label {
+            font-weight: normal;
+        }
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+        #target-area {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            cursor: pointer;
+        }
+        .stats {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        .error { 
+            color: red;
+            margin-top: 4px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="setup" class="bg-white shadow-lg rounded-lg p-8">
-            <h1 class="text-3xl font-bold mb-6 text-center">Caffeine Reaction Time Experiment</h1>
-            <div class="space-y-4">
-                <div>
-                    <label for="participant-id">Participant Identifier</label>
-                    <input type="text" id="participant-id" required placeholder="Enter unique identifier">
-                </div>
-                <div>
-                    <label>Caffeine Intake</label>
-                    <div>
-                        <label><input type="radio" name="caffeine-intake" value="0"> No Caffeine</label>
-                        <label><input type="radio" name="caffeine-intake" value="1"> 1 Cup</label>
-                        <label><input type="radio" name="caffeine-intake" value="2"> 2+ Cups</label>
-                    </div>
-                </div>
-                <div>
-                    <label>Time Since Last Caffeine</label>
-                    <div>
-                        <label><input type="radio" name="time-since-caffeine" value="0"> <1 Hour</label>
-                        <label><input type="radio" name="time-since-caffeine" value="1"> 1-3 Hours</label>
-                        <label><input type="radio" name="time-since-caffeine" value="2"> >3 Hours</label>
-                    </div>
-                </div>
-                <button id="start-btn">Begin Experiment</button>
+        <!-- Participant Information Form -->
+        <div id="setup" class="form-section">
+            <h1 style="text-align: center; margin-bottom: 24px;">Caffeine Reaction Time Study</h1>
+            <div class="form-group">
+                <label for="participant-id">Participant ID</label>
+                <input type="text" id="participant-id" required>
             </div>
+            <div class="form-group">
+                <label for="session-type">Session Type</label>
+                <select id="session-type" required>
+                    <option value="">Select session type</option>
+                    <option value="caffeine">Caffeinated</option>
+                    <option value="decaf">Decaffeinated</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="session-number">Session Number (1-4)</label>
+                <input type="number" id="session-number" min="1" max="4" required>
+            </div>
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" required>
+                    <option value="">Select gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="O">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Habitual Caffeine Consumer?</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="habitual-caffeine" value="yes"> Yes</label>
+                    <label><input type="radio" name="habitual-caffeine" value="no"> No</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="sleep-hours">Hours of Sleep (Last Night)</label>
+                <input type="number" id="sleep-hours" min="0" max="24" step="0.5" required>
+            </div>
+            <div class="form-group">
+                <label>Pre-session Controls Confirmed</label>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="caffeine-abstention"> 
+                        8h caffeine abstention
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="meal-timing"> 
+                        Standardized meal timing
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="sleep-diary"> 
+                        48h sleep diary completed
+                    </label>
+                </div>
+            </div>
+            <button id="start-btn">Begin Experiment</button>
         </div>
-        <div id="experiment" class="hidden relative">
+
+        <!-- Experiment Area -->
+        <div id="experiment" class="hidden">
             <div id="target-area"></div>
-            <div class="mt-8 space-y-4 relative z-60 text-center">
-                <div id="instructions">ℹ️ When screen turns GREEN, click as quickly as possible!</div>
+            <div class="stats">
                 <p>Trial <span id="trial-counter">1</span> of 5</p>
-                <div class="text-3xl font-bold">Reaction Time: <span id="reaction-time">-</span> ms</div>
+                <p>Last Reaction Time: <span id="reaction-time">-</span> ms</p>
+                <p id="instructions">Wait for the screen to turn GREEN, then click as quickly as possible!</p>
             </div>
         </div>
-        <div id="results" class="hidden bg-white shadow-lg rounded-lg p-8 text-center">
-            <h2 class="text-3xl font-bold mb-6">Experiment Results</h2>
-            <div class="space-y-4">
-                <p class="text-2xl">Average Reaction Time: <span id="average-time">-</span> ms</p>
-                <div>
-                    <button id="download-btn">Download Results</button>
-                    <button id="restart-btn">Restart Experiment</button>
-                </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden form-section">
+            <h2 style="text-align: center;">Session Results</h2>
+            <div class="stats">
+                <p>Average Reaction Time: <span id="average-time">-</span> ms</p>
+                <p>Standard Deviation: <span id="std-dev">-</span> ms</p>
             </div>
+            <button id="download-btn">Download Results</button>
+            <button id="restart-btn" style="margin-top: 12px;">Start New Session</button>
         </div>
     </div>
+
     <script>
-        class ReactionTimeExperiment {
-            constructor() {
-                this.config = {
-                    totalTrials: 5,
-                    minDelay: 1000,
-                    maxDelay: 3000,
-                    earlyClickPenalty: -500
-                };
-                this.initElements();
-                this.bindEvents();
-            }
+class ReactionTimeExperiment {
+    constructor() {
+        this.config = {
+            totalTrials: 5,
+            minDelay: 1000,
+            maxDelay: 5000, // Changed to 5000ms (5 seconds) as per requirements
+            earlyClickPenalty: null, // Changed to null to exclude early clicks
+            minimumReactionTime: 100 // Physiologically impossible to react faster
+        };
+        this.initElements();
+        this.bindEvents();
+    }
 
-            initElements() {
-                this.elements = {
-                    setup: document.getElementById('setup'),
-                    experiment: document.getElementById('experiment'),
-                    results: document.getElementById('results'),
-                    targetArea: document.getElementById('target-area'),
-                    instructions: document.getElementById('instructions'),
-                    trialCounter: document.getElementById('trial-counter'),
-                    reactionTime: document.getElementById('reaction-time'),
-                    averageTime: document.getElementById('average-time')
-                };
-            }
+    initElements() {
+        this.elements = {
+            setup: document.getElementById('setup'),
+            experiment: document.getElementById('experiment'),
+            results: document.getElementById('results'),
+            targetArea: document.getElementById('target-area'),
+            instructions: document.getElementById('instructions'),
+            trialCounter: document.getElementById('trial-counter'),
+            reactionTime: document.getElementById('reaction-time'),
+            averageTime: document.getElementById('average-time'),
+            stdDev: document.getElementById('std-dev')
+        };
+    }
 
-            bindEvents() {
-                document.getElementById('start-btn').addEventListener('click', () => this.startExperiment());
-                this.elements.targetArea.addEventListener('click', () => this.handleClick());
-                document.getElementById('download-btn').addEventListener('click', () => this.downloadResults());
-                document.getElementById('restart-btn').addEventListener('click', () => location.reload());
-            }
+    bindEvents() {
+        document.getElementById('start-btn').addEventListener('click', () => this.validateAndStart());
+        this.elements.targetArea.addEventListener('click', (e) => this.handleClick(e));
+        document.getElementById('download-btn').addEventListener('click', () => this.downloadResults());
+        document.getElementById('restart-btn').addEventListener('click', () => location.reload());
+    }
 
-            startExperiment() {
-                const participantId = document.getElementById('participant-id').value;
-                const caffeineIntake = document.querySelector('input[name="caffeine-intake"]:checked');
-                const timeSinceCaffeine = document.querySelector('input[name="time-since-caffeine"]:checked');
+    validateAndStart() {
+        // Validate all required fields
+        const requiredFields = {
+            'participant-id': 'Participant ID',
+            'session-type': 'Session Type',
+            'session-number': 'Session Number',
+            'gender': 'Gender',
+            'sleep-hours': 'Sleep Hours'
+        };
 
-                if (!participantId || !caffeineIntake || !timeSinceCaffeine) {
-                    alert('Please complete all sections of the form.');
-                    return;
-                }
+        let isValid = true;
+        let errorMessages = [];
 
-                this.state = {
-                    participantDetails: {
-                        id: participantId,
-                        caffeineIntake: caffeineIntake.value,
-                        timeSinceCaffeine: timeSinceCaffeine.value
-                    },
-                    trials: [],
-                    currentTrial: 0,
-                    experimentState: 'INIT'
-                };
-
-                this.elements.setup.classList.add('hidden');
-                this.elements.experiment.classList.remove('hidden');
-                this.runTrial();
-            }
-
-            runTrial() {
-                this.state.experimentState = 'WAITING';
-                this.elements.targetArea.style.backgroundColor = 'red';
-                this.elements.trialCounter.textContent = this.state.currentTrial + 1;
-
-                const delay = this.getRandomDelay();
-                this.state.stimulusDelay = delay;
-
-                setTimeout(() => {
-                    this.elements.targetArea.style.backgroundColor = 'green';
-                    this.state.experimentState = 'READY';
-                    this.state.startTime = performance.now();
-                }, delay);
-            }
-
-            getRandomDelay() {
-                return this.config.minDelay + Math.floor(Math.random() * (this.config.maxDelay - this.config.minDelay));
-            }
-
-            handleClick() {
-                const currentTime = performance.now();
-                if (this.state.experimentState === 'WAITING') {
-                    this.recordTrial(this.config.earlyClickPenalty);
-                } else if (this.state.experimentState === 'READY') {
-                    const reactionTime = Math.round(currentTime - this.state.startTime);
-                    this.recordTrial(reactionTime);
-                }
-            }
-
-            recordTrial(reactionTime) {
-                const trialData = {
-                    ...this.state.participantDetails,
-                    reactionTime,
-                    stimulusDelay: this.state.stimulusDelay,
-                    isEarlyClick: reactionTime < 0,
-                    timestamp: new Date().toISOString()
-                };
-
-                this.state.trials.push(trialData);
-                this.elements.reactionTime.textContent = reactionTime;
-                this.state.currentTrial++;
-
-                if (this.state.currentTrial < this.config.totalTrials) {
-                    setTimeout(() => this.runTrial(), 1500);
-                } else {
-                    this.showResults();
-                }
-            }
-
-            showResults() {
-                this.elements.experiment.classList.add('hidden');
-                this.elements.results.classList.remove('hidden');
-
-                const validTrials = this.state.trials.filter(trial => trial.reactionTime >= 0);
-                const averageTime = validTrials.length > 0
-                    ? validTrials.reduce((sum, trial) => sum + trial.reactionTime, 0) / validTrials.length
-                    : 0;
-                this.elements.averageTime.textContent = averageTime.toFixed(2);
-            }
-
-            downloadResults() {
-                const blob = new Blob([JSON.stringify(this.state.trials, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `reaction_time_results_${new Date().toISOString()}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+        for (const [id, label] of Object.entries(requiredFields)) {
+            const element = document.getElementById(id);
+            if (!element.value) {
+                isValid = false;
+                errorMessages.push(`${label} is required`);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => new ReactionTimeExperiment());
+        // Validate checkboxes
+        const requiredCheckboxes = ['caffeine-abstention', 'meal-timing', 'sleep-diary'];
+        for (const id of requiredCheckboxes) {
+            if (!document.getElementById(id).checked) {
+                isValid = false;
+                errorMessages.push(`Please confirm ${id.replace('-', ' ')}`);
+            }
+        }
+
+        // Validate habitual caffeine
+        if (!document.querySelector('input[name="habitual-caffeine"]:checked')) {
+            isValid = false;
+            errorMessages.push('Please select habitual caffeine consumption');
+        }
+
+        if (!isValid) {
+            alert('Please complete all required fields:\n' + errorMessages.join('\n'));
+            return;
+        }
+
+        this.startExperiment();
+    }
+
+    startExperiment() {
+        this.state = {
+            participantDetails: {
+                id: document.getElementById('participant-id').value,
+                sessionType: document.getElementById('session-type').value,
+                sessionNumber: document.getElementById('session-number').value,
+                gender: document.getElementById('gender').value,
+                habitualCaffeine: document.querySelector('input[name="habitual-caffeine"]:checked').value,
+                sleepHours: document.getElementById('sleep-hours').value,
+                timestamp: new Date().toISOString()
+            },
+            trials: [],
+            currentTrial: 0,
+            experimentState: 'INIT'
+        };
+
+        this.elements.setup.classList.add('hidden');
+        this.elements.experiment.classList.remove('hidden');
+        this.runTrial();
+    }
+
+    runTrial() {
+        this.state.experimentState = 'WAITING';
+        this.elements.targetArea.style.backgroundColor = 'red';
+        this.elements.trialCounter.textContent = this.state.currentTrial + 1;
+        
+        // Clear any existing timeout
+        if (this.stimulusTimeout) {
+            clearTimeout(this.stimulusTimeout);
+        }
+
+        const delay = this.getRandomDelay();
+        this.state.stimulusDelay = delay;
+
+        this.stimulusTimeout = setTimeout(() => {
+            this.elements.targetArea.style.backgroundColor = 'green';
+            this.state.experimentState = 'READY';
+            this.state.startTime = performance.now();
+        }, delay);
+    }
+
+    getRandomDelay() {
+        return this.config.minDelay + Math.floor(Math.random() * (this.config.maxDelay - this.config.minDelay));
+    }
+
+    handleClick(event) {
+        const currentTime = performance.now();
+        
+        if (this.state.experimentState === 'WAITING') {
+            // Early click - ignore and restart trial
+            this.elements.instructions.textContent = "Too early! Wait for GREEN. Restarting trial...";
+            setTimeout(() => {
+                this.elements.instructions.textContent = "Wait for the screen to turn GREEN, then click as quickly as possible!";
+                this.runTrial();
+            }, 1500);
+            return;
+        }
+        
+        if (this.state.experimentState === 'READY') {
+            const reactionTime = Math.round(currentTime - this.state.startTime);
+            
+            // Validate reaction time
+            if (reactionTime < this.config.minimumReactionTime) {
+                this.elements.instructions.textContent = "Click detected too fast. Restarting trial...";
+                setTimeout(() => {
+                    this.elements.instructions.textContent = "Wait for the screen to turn GREEN, then click as quickly as possible!";
+                    this.runTrial();
+                }, 1500);
+                return;
+            }
+            
+            this.recordTrial(reactionTime, event);
+        }
+    }
+
+    recordTrial(reactionTime, event) {
+        const trialData = {
+            ...this.state.participantDetails,
+            trialNumber: this.state.currentTrial + 1,
+            reactionTime,
+            stimulusDelay: this.state.stimulusDelay,
+            clickX: event.clientX,
+            clickY: event.clientY,
+            screenWidth: window.innerWidth,
+            screenHeight: window.innerHeight,
+            devicePixelRatio: window.devicePixelRatio,
+            timestamp: new Date().toISOString()
+        };
+
+        this.state.trials.push(trialData);
+        this.elements.reactionTime.textContent = reactionTime;
+        this.state.currentTrial++;
+
+        if (this.state.currentTrial < this.config.totalTrials) {
+            setTimeout(() => this.runTrial(), 1500);
+        } else {
+            this.showResults();
+        }
+    }
+
+    calculateStatistics(trials) {
+        const times = trials.map(t => t.reactionTime);
+        const mean = times.reduce((a, b) => a + b, 0) / times.length;
+        const variance = times.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / times.length;
+        const stdDev = Math.sqrt(variance);
+        return { mean, stdDev };
+    }
+
+    showResults() {
+        this.elements.experiment.classList.add('hidden');
+        this.elements.results.classList.remove('hidden');
+
+        const stats = this.calculateStatistics(this.state.trials);
+        this.elements.averageTime.textContent = stats.mean.toFixed(2);
+        this.elements.stdDev.textContent = stats.stdDev.toFixed(2);
+    }
+
+    downloadResults() {
+        const resultsWithMetadata = {
+            experimentMetadata: {
+                version: "1.0.0",
+                timestamp: new Date().toISOString(),
+                totalTrials: this.config.totalTrials,
+                browser: navigator.userAgent,
+                platform: navigator.platform
+            },
+            trials: this.state.trials
+        };
+
+        const blob = new Blob([JSON.stringify(resultsWithMetadata, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reaction_time_${this.state.participantDetails.id}_session${this.state.participantDetails.sessionNumber}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => new ReactionTimeExperiment());
     </script>
 </body>
 </html>
