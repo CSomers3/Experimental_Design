@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caffeine Reaction Time Study</title>
     <style>
+        /* Style Definitions */
         body {
             font-family: Arial, sans-serif;
             background-color: #f3f4f6;
@@ -42,7 +43,6 @@
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            margin-top: 4px;
         }
         .radio-group {
             display: flex;
@@ -59,7 +59,6 @@
             border-radius: 4px;
             cursor: pointer;
             width: 100%;
-            font-size: 16px;
         }
         button:hover {
             background-color: #2563eb;
@@ -68,8 +67,6 @@
             background-color: white;
             border-radius: 8px;
             padding: 24px;
-            margin: 20px auto;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
         #reaction-area {
@@ -78,61 +75,29 @@
             margin: 20px auto;
             border: 2px solid #ddd;
             border-radius: 8px;
-            position: relative;
             cursor: pointer;
             background-color: white;
         }
         .status-text {
             font-size: 1.2em;
             margin: 15px 0;
-            height: 1.5em;
-        }
-        .controls {
-            margin: 20px 0;
-        }
-        .trial-info {
-            font-size: 1.1em;
-            margin: 10px 0;
         }
         .stats {
             text-align: center;
             margin-top: 20px;
             font-size: 1.2em;
         }
-        .ready-btn {
-            background-color: #4CAF50;
-            padding: 12px 40px;
-            font-size: 1.1em;
-        }
-        .ready-btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        .checkbox-group {
-            margin-top: 8px;
-        }
-        .checkbox-group label {
-            font-weight: normal;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .checkbox-group input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Setup Screen -->
         <div id="setup" class="form-section">
-            <h1 style="text-align: center; margin-bottom: 24px;">Caffeine Reaction Time Study</h1>
-            
+            <h1>Caffeine Reaction Time Study</h1>
             <div class="form-group">
                 <label for="participant-id">Participant ID</label>
                 <input type="text" id="participant-id" required>
             </div>
-
             <div class="form-group">
                 <label for="session-type">Session Type</label>
                 <select id="session-type" required>
@@ -141,12 +106,10 @@
                     <option value="decaf">Decaffeinated</option>
                 </select>
             </div>
-
             <div class="form-group">
                 <label for="session-number">Session Number (1-4)</label>
                 <input type="number" id="session-number" min="1" max="4" required>
             </div>
-
             <div class="form-group">
                 <label for="gender">Gender</label>
                 <select id="gender" required>
@@ -156,7 +119,6 @@
                     <option value="O">Other</option>
                 </select>
             </div>
-
             <div class="form-group">
                 <label>Habitual Caffeine Consumer?</label>
                 <div class="radio-group">
@@ -164,275 +126,113 @@
                     <label><input type="radio" name="habitual-caffeine" value="no"> No</label>
                 </div>
             </div>
-
             <div class="form-group">
                 <label for="sleep-hours">Hours of Sleep (Last Night)</label>
                 <input type="number" id="sleep-hours" min="0" max="24" step="0.5" required>
             </div>
-
-            <div class="form-group">
-                <label>Pre-session Controls Confirmed</label>
-                <div class="checkbox-group">
-                    <label>
-                        <input type="checkbox" id="caffeine-abstention">
-                        8h caffeine abstention
-                    </label>
-                </div>
-                <div class="checkbox-group">
-                    <label>
-                        <input type="checkbox" id="meal-timing">
-                        Standardized meal timing
-                    </label>
-                </div>
-                <div class="checkbox-group">
-                    <label>
-                        <input type="checkbox" id="sleep-diary">
-                        48h sleep diary completed
-                    </label>
-                </div>
-            </div>
-
             <button id="start-btn">Begin Experiment</button>
         </div>
 
+        <!-- Experiment Screen -->
         <div id="experiment" class="hidden">
             <div class="experiment-container">
                 <h2>Reaction Time Test</h2>
-                
-                <div class="trial-info">
-                    Trial <span id="trial-counter">1</span> of 5
-                </div>
-
-                <div class="status-text" id="instructions">
-                    Press "Start Trial" when you're ready
-                </div>
-
+                <div class="status-text" id="instructions">Press "Start Trial" to begin</div>
                 <div id="reaction-area"></div>
-
-                <div class="controls">
-                    <button id="ready-btn" class="ready-btn">Start Trial</button>
-                </div>
+                <button id="ready-btn" class="hidden">Start Trial</button>
             </div>
         </div>
 
+        <!-- Results Screen -->
         <div id="results" class="hidden form-section">
-            <h2 style="text-align: center;">Session Results</h2>
+            <h2>Session Results</h2>
             <div class="stats">
                 <p>Average Reaction Time: <span id="average-time">-</span> ms</p>
                 <p>Standard Deviation: <span id="std-dev">-</span> ms</p>
-                <p>Minimum Time: <span id="min-time">-</span> ms</p>
-                <p>Maximum Time: <span id="max-time">-</span> ms</p>
             </div>
             <button id="download-btn">Download Results</button>
-            <button id="restart-btn" style="margin-top: 12px;">Start New Session</button>
         </div>
     </div>
 
     <script>
         class ReactionTimeExperiment {
             constructor() {
-                this.config = {
-                    totalTrials: 5,
-                    minDelay: 1000,
-                    maxDelay: 5000,
-                    minimumReactionTime: 100
-                };
-                this.initElements();
-                this.bindEvents();
-            }
-
-            initElements() {
                 this.elements = {
                     setup: document.getElementById('setup'),
                     experiment: document.getElementById('experiment'),
                     results: document.getElementById('results'),
-                    reactionArea: document.getElementById('reaction-area'),
-                    instructions: document.getElementById('instructions'),
-                    trialCounter: document.getElementById('trial-counter'),
                     readyBtn: document.getElementById('ready-btn'),
+                    reactionArea: document.getElementById('reaction-area'),
                     averageTime: document.getElementById('average-time'),
                     stdDev: document.getElementById('std-dev'),
-                    minTime: document.getElementById('min-time'),
-                    maxTime: document.getElementById('max-time')
                 };
+                this.trials = [];
+                this.totalTrials = 5;
+                this.bindEvents();
             }
 
             bindEvents() {
                 document.getElementById('start-btn').addEventListener('click', () => this.validateAndStart());
-                this.elements.reactionArea.addEventListener('click', (e) => this.handleClick(e));
+                this.elements.reactionArea.addEventListener('click', () => this.recordReaction());
                 this.elements.readyBtn.addEventListener('click', () => this.startTrial());
                 document.getElementById('download-btn').addEventListener('click', () => this.downloadResults());
-                document.getElementById('restart-btn').addEventListener('click', () => location.reload());
             }
 
             validateAndStart() {
-                const requiredFields = {
-                    'participant-id': 'Participant ID',
-                    'session-type': 'Session Type',
-                    'session-number': 'Session Number',
-                    'gender': 'Gender',
-                    'sleep-hours': 'Sleep Hours'
-                };
-
-                let isValid = true;
-                let errorMessages = [];
-
-                for (const [id, label] of Object.entries(requiredFields)) {
-                    const element = document.getElementById(id);
-                    if (!element.value) {
-                        isValid = false;
-                        errorMessages.push(`${label} is required`);
+                const requiredFields = ['participant-id', 'session-type', 'session-number', 'gender', 'sleep-hours'];
+                for (const id of requiredFields) {
+                    const el = document.getElementById(id);
+                    if (!el.value.trim()) {
+                        alert('All fields are required.');
+                        return;
                     }
                 }
-
-                const requiredCheckboxes = ['caffeine-abstention', 'meal-timing', 'sleep-diary'];
-                for (const id of requiredCheckboxes) {
-                    if (!document.getElementById(id).checked) {
-                        isValid = false;
-                        errorMessages.push(`Please confirm ${id.replace('-', ' ')}`);
-                    }
-                }
-
-                if (!document.querySelector('input[name="habitual-caffeine"]:checked')) {
-                    isValid = false;
-                    errorMessages.push('Please select habitual caffeine consumption');
-                }
-
-                if (!isValid) {
-                    alert('Please complete all required fields:\n' + errorMessages.join('\n'));
-                    return;
-                }
-
-                this.startExperiment();
-            }
-
-            startExperiment() {
-                this.state = {
-                    participantDetails: {
-                        id: document.getElementById('participant-id').value,
-                        sessionType: document.getElementById('session-type').value,
-                        sessionNumber: document.getElementById('session-number').value,
-                        gender: document.getElementById('gender').value,
-                        habitualCaffeine: document.querySelector('input[name="habitual-caffeine"]:checked').value,
-                        sleepHours: document.getElementById('sleep-hours').value,
-                        timestamp: new Date().toISOString()
-                    },
-                    trials: [],
-                    currentTrial: 0,
-                    experimentState: 'READY'
-                };
-
                 this.elements.setup.classList.add('hidden');
                 this.elements.experiment.classList.remove('hidden');
-                this.elements.readyBtn.disabled = false;
             }
 
             startTrial() {
-                this.state.experimentState = 'WAITING';
+                this.elements.readyBtn.classList.add('hidden');
                 this.elements.reactionArea.style.backgroundColor = 'red';
-                this.elements.readyBtn.disabled = true;
-                this.elements.instructions.textContent = 'Wait for GREEN...';
-
-                const delay = this.getRandomDelay();
-                this.state.stimulusDelay = delay;
-
-                this.stimulusTimeout = setTimeout(() => {
+                setTimeout(() => {
                     this.elements.reactionArea.style.backgroundColor = 'green';
-                    this.state.experimentState = 'READY';
-                    this.state.startTime = performance.now();
-                    this.elements.instructions.textContent = 'Click Now!';
-                }, delay);
+                    this.startTime = performance.now();
+                }, Math.random() * 3000 + 1000);
             }
 
-            getRandomDelay() {
-                return this.config.minDelay + Math.floor(Math.random() * (this.config.maxDelay - this.config.minDelay));
-            }
-
-            handleClick(event) {
-                if (this.state.experimentState === 'WAITING') {
-                    clearTimeout(this.stimulusTimeout);
-                    this.elements.reactionArea.style.backgroundColor = 'white';
-                    this.elements.instructions.textContent = 'Too early! Press "Start Trial" to try again';
-                    this.elements.readyBtn.disabled = false;
-                    return;
+            recordReaction() {
+                const reactionTime = performance.now() - this.startTime;
+                this.trials.push(reactionTime);
+                if (this.trials.length === this.totalTrials) {
+                    this.showResults();
+                } else {
+                    this.elements.readyBtn.classList.remove('hidden');
                 }
-
-                if (this.state.experimentState === 'READY') {
-                    const reactionTime = Math.round(performance.now() - this.state.startTime);
-                    
-                    if (reactionTime < this.config.minimumReactionTime) {
-                        this.elements.reactionArea.style.backgroundColor = 'white';
-                        this.elements.instructions.textContent = 'Too fast! Press "Start Trial" to try again';
-                        this.elements.readyBtn.disabled = false;
-                        return;
-                    }
-
-                    this.recordTrial(reactionTime, event);
-                    this.elements.reactionArea.style.backgroundColor = 'white';
-
-                    if (this.state.currentTrial < this.config.totalTrials) {
-                        this.elements.instructions.textContent = 'Press "Start Trial" when ready for the next trial';
-                        this.elements.readyBtn.disabled = false;
-                    } else {
-                        this.showResults();
-                    }
-                }
-            }
-
-            recordTrial(reactionTime, event) {
-                const trialData = {
-                    ...this.state.participantDetails,
-                    trialNumber: this.state.currentTrial + 1,
-                    reactionTime,
-                    stimulusDelay: this.state.stimulusDelay,
-                    clickX: event.clientX,
-                    clickY: event.clientY,
-                    screenWidth: window.innerWidth,
-                    screenHeight: window.innerHeight,
-                    devicePixelRatio: window.devicePixelRatio,
-                    timestamp: new Date().toISOString()
-                };
-
-                this.state.trials.push(trialData);
-                this.state.currentTrial++;
-                this.elements.trialCounter.textContent = this.state.currentTrial + 1;
-            }
-
-            calculateStatistics(trials) {
-                const times = trials.map(t => t.reactionTime);
-                const mean = times.reduce((a, b) => a + b, 0) / times.length;
-                const variance = times.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / times.length;
-                const stdDev = Math.sqrt(variance);
-                const min = Math.min(...times);
-                const max = Math.max(...times);
-                return { mean, stdDev, min, max };
             }
 
             showResults() {
+                const avg = this.trials.reduce((a, b) => a + b, 0) / this.trials.length;
+                const stdDev = Math.sqrt(
+                    this.trials.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / this.trials.length
+                );
+                this.elements.averageTime.textContent = avg.toFixed(2);
+                this.elements.stdDev.textContent = stdDev.toFixed(2);
                 this.elements.experiment.classList.add('hidden');
                 this.elements.results.classList.remove('hidden');
-            
-                const stats = this.calculateStatistics(this.state.trials);
-            
-                // Populate results
-                this.elements.averageTime.textContent = `${stats.mean.toFixed(2)} ms`;
-                this.elements.stdDev.textContent = `${stats.stdDev.toFixed(2)} ms`;
-                this.elements.minTime.textContent = `${stats.min} ms`;
-                this.elements.maxTime.textContent = `${stats.max} ms`;
-            
-                // Log results to the console for debugging (optional)
-                console.log('Session Results:', this.state.trials);
-            }
-            
-            downloadResults() {
-                const blob = new Blob([JSON.stringify(this.state.trials, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-            
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `reaction_time_results_${this.state.participantDetails.id}.json`;
-                link.click();
-            
-                URL.revokeObjectURL(url);
             }
 
+            downloadResults() {
+                const blob = new Blob([JSON.stringify(this.trials)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'results.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        new ReactionTimeExperiment();
+    </script>
+</body>
+</html>
