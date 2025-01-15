@@ -410,4 +410,29 @@
 
             showResults() {
                 this.elements.experiment.classList.add('hidden');
-                this.elements.results.classList.remove('
+                this.elements.results.classList.remove('hidden');
+            
+                const stats = this.calculateStatistics(this.state.trials);
+            
+                // Populate results
+                this.elements.averageTime.textContent = `${stats.mean.toFixed(2)} ms`;
+                this.elements.stdDev.textContent = `${stats.stdDev.toFixed(2)} ms`;
+                this.elements.minTime.textContent = `${stats.min} ms`;
+                this.elements.maxTime.textContent = `${stats.max} ms`;
+            
+                // Log results to the console for debugging (optional)
+                console.log('Session Results:', this.state.trials);
+            }
+            
+            downloadResults() {
+                const blob = new Blob([JSON.stringify(this.state.trials, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+            
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `reaction_time_results_${this.state.participantDetails.id}.json`;
+                link.click();
+            
+                URL.revokeObjectURL(url);
+            }
+
