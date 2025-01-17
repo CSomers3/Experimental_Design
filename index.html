@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caffeine Reaction Time Study</title>
     <style>
-        /* Style Definitions */
         body {
             font-family: Arial, sans-serif;
             background-color: #f3f4f6;
@@ -87,6 +86,36 @@
             margin-top: 20px;
             font-size: 1.2em;
         }
+        .invalid-click {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #eee;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #3b82f6;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .trial-counter {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        .error-message {
+            color: #ef4444;
+            margin: 10px 0;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -137,9 +166,14 @@
         <div id="experiment" class="hidden">
             <div class="experiment-container">
                 <h2>Reaction Time Test</h2>
-                <div class="status-text" id="instructions">Press "Start Trial" to begin</div>
+                <div class="trial-counter">Trial: <span id="trial-count">0</span>/10</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="status-text" id="instructions">Wait for the "Start Trial" button...</div>
                 <div id="reaction-area"></div>
-                <button id="ready-btn" class="hidden">Start Trial</button>
+                <div id="error-message" class="error-message hidden"></div>
+                <button id="ready-btn">Start Trial</button>
             </div>
         </div>
 
@@ -149,8 +183,12 @@
             <div class="stats">
                 <p>Average Reaction Time: <span id="average-time">-</span> ms</p>
                 <p>Standard Deviation: <span id="std-dev">-</span> ms</p>
+                <p>Median Reaction Time: <span id="median-time">-</span> ms</p>
+                <p>Fastest Time: <span id="fastest-time">-</span> ms</p>
+                <p>Number of Valid Trials: <span id="valid-trials">-</span></p>
             </div>
             <button id="download-btn">Download Results</button>
+            <button id="restart-btn">Start New Session</button>
         </div>
     </div>
 
@@ -163,23 +201,49 @@
                     results: document.getElementById('results'),
                     readyBtn: document.getElementById('ready-btn'),
                     reactionArea: document.getElementById('reaction-area'),
+                    instructions: document.getElementById('instructions'),
+                    errorMessage: document.getElementById('error-message'),
+                    trialCount: document.getElementById('trial-count'),
+                    progressFill: document.querySelector('.progress-fill'),
                     averageTime: document.getElementById('average-time'),
                     stdDev: document.getElementById('std-dev'),
+                    medianTime: document.getElementById('median-time'),
+                    fastestTime: document.getElementById('fastest-time'),
+                    validTrials: document.getElementById('valid-trials')
                 };
+
                 this.trials = [];
-                this.totalTrials = 5;
+                this.totalTrials = 10;
+                this.currentState = 'idle';
+                this.startTime = null;
+                this.timeoutId = null;
                 this.bindEvents();
             }
 
             bindEvents() {
                 document.getElementById('start-btn').addEventListener('click', () => this.validateAndStart());
-                this.elements.reactionArea.addEventListener('click', () => this.recordReaction());
+                this.elements.reactionArea.addEventListener('click', (e) => this.handleReactionAreaClick(e));
                 this.elements.readyBtn.addEventListener('click', () => this.startTrial());
                 document.getElementById('download-btn').addEventListener('click', () => this.downloadResults());
+                document.getElementById('restart-btn').addEventListener('click', () => this.restart());
+
+                // Prevent spacebar from triggering button clicks
+                window.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                    }
+                });
             }
 
             validateAndStart() {
                 const requiredFields = ['participant-id', 'session-type', 'session-number', 'gender', 'sleep-hours'];
+                const habitualCaffeine = document.querySelector('input[name="habitual-caffeine"]:checked');
+                
+                if (!habitualCaffeine) {
+                    alert('Please indicate if you are a habitual caffeine consumer.');
+                    return;
+                }
+
                 for (const id of requiredFields) {
                     const el = document.getElementById(id);
                     if (!el.value.trim()) {
@@ -187,48 +251,134 @@
                         return;
                     }
                 }
+
+                this.participantData = {
+                    id: document.getElementById('participant-id').value,
+                    sessionType: document.getElementById('session-type').value,
+                    sessionNumber: document.getElementById('session-number').value,
+                    gender: document.getElementById('gender').value,
+                    habitualCaffeine: habitualCaffeine.value,
+                    sleepHours: document.getElementById('sleep-hours').value
+                };
+
                 this.elements.setup.classList.add('hidden');
                 this.elements.experiment.classList.remove('hidden');
+                this.updateProgress();
             }
 
             startTrial() {
+                this.currentState = 'waiting';
                 this.elements.readyBtn.classList.add('hidden');
                 this.elements.reactionArea.style.backgroundColor = 'red';
-                setTimeout(() => {
-                    this.elements.reactionArea.style.backgroundColor = 'green';
-                    this.startTime = performance.now();
-                }, Math.random() * 3000 + 1000);
+                this.elements.instructions.textContent = 'Wait for green...';
+                this.elements.errorMessage.classList.add('hidden');
+
+                // Random delay between 1-5 seconds
+                const delay = Math.random() * 4000 + 1000;
+                this.timeoutId = setTimeout(() => {
+                    if (this.currentState === 'waiting') {
+                        this.currentState = 'ready';
+                        this.elements.reactionArea.style.backgroundColor = 'green';
+                        this.elements.instructions.textContent = 'Click Now!';
+                        this.startTime = performance.now();
+                    }
+                }, delay);
             }
 
-            recordReaction() {
-                const reactionTime = performance.now() - this.startTime;
-                this.trials.push(reactionTime);
-                if (this.trials.length === this.totalTrials) {
-                    this.showResults();
-                } else {
+            handleReactionAreaClick(e) {
+                e.preventDefault();
+
+                if (this.currentState === 'waiting') {
+                    // Too early!
+                    clearTimeout(this.timeoutId);
+                    this.elements.reactionArea.classList.add('invalid-click');
+                    this.elements.errorMessage.textContent = 'Too early! Wait for green.';
+                    this.elements.errorMessage.classList.remove('hidden');
+                    this.elements.reactionArea.style.backgroundColor = 'white';
+                    
+                    setTimeout(() => {
+                        this.elements.reactionArea.classList.remove('invalid-click');
+                        this.elements.readyBtn.classList.remove('hidden');
+                        this.elements.instructions.textContent = 'Press "Start Trial" when ready';
+                    }, 500);
+                    
+                    this.currentState = 'idle';
+                } else if (this.currentState === 'ready') {
+                    const reactionTime = performance.now() - this.startTime;
+                    
+                    // Only accept reactions between 100ms and 1000ms as valid
+                    if (reactionTime >= 100 && reactionTime <= 1000) {
+                        this.trials.push(reactionTime);
+                        this.updateProgress();
+                    } else {
+                        this.elements.errorMessage.textContent = 'Invalid reaction time. Please try again.';
+                        this.elements.errorMessage.classList.remove('hidden');
+                    }
+
+                    this.elements.reactionArea.style.backgroundColor = 'white';
+                    this.elements.instructions.textContent = 'Press "Start Trial" when ready';
                     this.elements.readyBtn.classList.remove('hidden');
+                    this.currentState = 'idle';
+
+                    if (this.trials.length >= this.totalTrials) {
+                        this.showResults();
+                    }
                 }
             }
 
-            showResults() {
+            updateProgress() {
+                this.elements.trialCount.textContent = this.trials.length;
+                this.elements.progressFill.style.width = `${(this.trials.length / this.totalTrials) * 100}%`;
+            }
+
+            calculateStats() {
+                const sorted = [...this.trials].sort((a, b) => a - b);
                 const avg = this.trials.reduce((a, b) => a + b, 0) / this.trials.length;
                 const stdDev = Math.sqrt(
                     this.trials.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / this.trials.length
                 );
-                this.elements.averageTime.textContent = avg.toFixed(2);
-                this.elements.stdDev.textContent = stdDev.toFixed(2);
+                const median = sorted[Math.floor(sorted.length / 2)];
+                const fastest = sorted[0];
+
+                return { avg, stdDev, median, fastest };
+            }
+
+            showResults() {
+                const stats = this.calculateStats();
+                
+                this.elements.averageTime.textContent = stats.avg.toFixed(1);
+                this.elements.stdDev.textContent = stats.stdDev.toFixed(1);
+                this.elements.medianTime.textContent = stats.median.toFixed(1);
+                this.elements.fastestTime.textContent = stats.fastest.toFixed(1);
+                this.elements.validTrials.textContent = this.trials.length;
+
                 this.elements.experiment.classList.add('hidden');
                 this.elements.results.classList.remove('hidden');
             }
 
             downloadResults() {
-                const blob = new Blob([JSON.stringify(this.trials)], { type: 'application/json' });
+                const results = {
+                    participant: this.participantData,
+                    trials: this.trials,
+                    statistics: this.calculateStats(),
+                    timestamp: new Date().toISOString()
+                };
+
+                const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'results.json';
+                a.download = `reaction-time-${this.participantData.id}-session${this.participantData.sessionNumber}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
+            }
+
+            restart() {
+                this.trials = [];
+                this.currentState = 'idle';
+                this.elements.results.classList.add('hidden');
+                this.elements.setup.classList.remove('hidden');
+                this.updateProgress();
             }
         }
 
