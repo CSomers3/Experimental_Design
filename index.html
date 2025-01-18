@@ -272,9 +272,10 @@
                 this.elements.reactionArea.style.backgroundColor = 'red';
                 this.elements.instructions.textContent = 'Wait for green...';
                 this.elements.errorMessage.classList.add('hidden');
-
+            
                 // Random delay between 1-5 seconds
                 const delay = Math.random() * 4000 + 1000;
+                this.currentDelay = delay; // Store the delay for this trial
                 this.timeoutId = setTimeout(() => {
                     if (this.currentState === 'waiting') {
                         this.currentState = 'ready';
@@ -284,6 +285,7 @@
                     }
                 }, delay);
             }
+
 
             handleReactionAreaClick(e) {
                 e.preventDefault();
@@ -308,7 +310,7 @@
                     
                     // Only accept reactions between 100ms and 1000ms as valid
                     if (reactionTime >= 100 && reactionTime <= 1000) {
-                        this.trials.push(reactionTime);
+                        this.trials.push({reactionTime, delay: this.currentDelay});
                         this.updateProgress();
                     } else {
                         this.elements.errorMessage.textContent = 'Invalid reaction time. Please try again.';
@@ -331,15 +333,27 @@
                 this.elements.progressFill.style.width = `${(this.trials.length / this.totalTrials) * 100}%`;
             }
 
-            calculateStats() {
-                const sorted = [...this.trials].sort((a, b) => a - b);
-                const avg = this.trials.reduce((a, b) => a + b, 0) / this.trials.length;
-                const stdDev = Math.sqrt(
-                    this.trials.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / this.trials.length
-                );
-                const median = sorted[Math.floor(sorted.length / 2)];
-                const fastest = sorted[0];
+            // calculateStats() {
+            //     const sorted = [...this.trials].sort((a, b) => a - b);
+            //     const avg = this.trials.reduce((a, b) => a + b, 0) / this.trials.length;
+            //     const stdDev = Math.sqrt(
+            //         this.trials.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / this.trials.length
+            //     );
+            //     const median = sorted[Math.floor(sorted.length / 2)];
+            //     const fastest = sorted[0];
 
+            //     return { avg, stdDev, median, fastest };
+            // }
+
+            calculateStats() {
+                const reactionTimes = this.trials.map(t => t.reactionTime);
+                const avg = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
+                const stdDev = Math.sqrt(
+                    reactionTimes.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / reactionTimes.length
+                );
+                const median = [...reactionTimes].sort((a, b) => a - b)[Math.floor(reactionTimes.length / 2)];
+                const fastest = Math.min(...reactionTimes);
+            
                 return { avg, stdDev, median, fastest };
             }
 
