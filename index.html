@@ -170,7 +170,7 @@
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: 0%"></div>
                 </div>
-                <div class="status-text" id="instructions">Wait for the "Start Trial" button...</div>
+                <div class="status-text" id="instructions">Click "Start Trial" when ready...</div>
                 <div id="reaction-area"></div>
                 <div id="error-message" class="error-message hidden"></div>
                 <button id="ready-btn">Start Trial</button>
@@ -368,7 +368,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `reaction-time-${this.participantData.id}-session${this.participantData.sessionNumber}.json`;
+                a.download = `RT-${this.participantData.id}-S${this.participantData.sessionNumber}-T${this.participantData.sessionType}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
             }
